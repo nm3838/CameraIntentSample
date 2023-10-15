@@ -24,23 +24,13 @@ public class MainActivity extends AppCompatActivity {
     //保存された画像のURI
     private Uri _imageUri;
 
+    ActivityResultLauncher<Intent> _cameraLauncher
+            = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallbackFromCamera());
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        //親クラスの同名メソッドの呼び出し
-        super.onActivityResult(requestCode, resultCode, data);
-        //カメラアプリとの連携からの戻りでかつ撮影成功の場合
-        if(requestCode == 200 && resultCode == RESULT_OK) {
-            //画像を表示するImageViewを取得
-            ImageView ivCamera = findViewById(R.id.ivCamera);
-            //撮影された画像をImageViewに設定
-            ivCamera.setImageURI(_imageUri);
-        }
     }
 
     //画像部分がタップされた時の処理メソッド
@@ -71,7 +61,16 @@ public class MainActivity extends AppCompatActivity {
         //Extra情報として_imageUriを設定
         intent.putExtra(MediaStore.EXTRA_OUTPUT, _imageUri);
         //アクティビティを起動
-        startActivityForResult(intent, 200);
-        ;
+        _cameraLauncher.launch(intent);
+    }
+
+    private class ActivityResultCallbackFromCamera implements ActivityResultCallback<ActivityResult> {
+        @Override
+        public void onActivityResult(ActivityResult result) {
+            if(result.getResultCode() == RESULT_OK) {
+                ImageView ivCamera = findViewById(R.id.ivCamera);
+                ivCamera.setImageURI(_imageUri);
+            }
+        }
     }
 }
